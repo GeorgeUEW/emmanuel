@@ -577,7 +577,9 @@ class App {
       this._kpi('Customers',custs,'kpi-icon','background:var(--info-bg);color:var(--info)',`${tx} total transactions`,'var(--info)',0,'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>')+
       this._kpi('Avg Sale',tx?F.money(rev/tx):'—','kpi-icon','background:var(--brand-lt);color:var(--brand)','Per transaction average','var(--brand)',0,'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>');
     this._donut('d-donut',pL,dL); document.getElementById('d-dval').textContent=F.n2(tL)+'L'; this._dlegend('d-dleg',pL,dL,tL);
-    const tD=f?new Date(f+'T00:00:00'):new Date(); this._trend('d-trend',arr,tD.getMonth(),tD.getFullYear());
+    const tD=f?new Date(f+'T00:00:00'):new Date();
+    // Defer to next frame so the page layout is fully computed before drawing canvas
+    requestAnimationFrame(()=>{ this._trend('d-trend',arr,tD.getMonth(),tD.getFullYear()); });
     const cm=this._cmap();
     const ct={}; arr.forEach(p=>{ if(!ct[p.cid]) ct[p.cid]={p:0,d:0,rev:0}; if(p.fuel==='Petrol') ct[p.cid].p+=p.litres; else ct[p.cid].d+=p.litres; ct[p.cid].rev+=p.total; });
     const top=Object.entries(ct).sort((a,b)=>b[1].rev-a[1].rev).slice(0,8);
@@ -2517,7 +2519,9 @@ body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:#f4f4f
   _trend(id, ps, month, year){
     const canvas = document.getElementById(id); if(!canvas) return;
     const dpr = devicePixelRatio || 1;
-    const w = canvas.parentElement?.offsetWidth || canvas.offsetWidth || 400;
+    const w = canvas.parentElement?.offsetWidth || canvas.offsetWidth || 0;
+    // If layout not ready yet, retry on next frame (happens on first page load)
+    if(w < 10){ requestAnimationFrame(()=>this._trend(id, ps, month, year)); return; }
     const h = 185;
     canvas.width = w * dpr; canvas.height = h * dpr;
     canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
