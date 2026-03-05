@@ -557,12 +557,10 @@ class App {
 
   /* ── DASHBOARD ── */
   renderDash(){
-    // Show skeletons on first render if no data yet
+    // Show KPI skeletons on first render if no data yet
     const kpiGrid = document.getElementById('d-kpis');
     if(kpiGrid && !kpiGrid.querySelector('.kpi-card') && !DB.get('_purchases',[]).length){
       kpiGrid.innerHTML = Array(4).fill('<div class="skeleton sk-kpi"></div>').join('');
-      const chartBoxes = document.querySelectorAll('#page-dashboard .chart-box');
-      chartBoxes.forEach(b=>{ if(!b.querySelector('canvas[data-drawn]')) b.innerHTML='<div class="skeleton sk-chart" style="margin:.5rem"></div>'; });
     }
     const ps=DB.get('_purchases',[]);
     const f=this.dFrom, t=this.dTo;
